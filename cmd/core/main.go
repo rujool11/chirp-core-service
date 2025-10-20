@@ -13,6 +13,11 @@ func main() {
 	// initialize DB connection
 	db.InitDB()
 	defer db.DB.Close()
+	db.CreatePostTableIfDoesNotExist()
+	db.CreateCommentTableIfDoesNotExist()
+	db.CreatePostLikeTableIfDoesNotExist()
+	db.CreateCommentLikeTableIfDoesNotExist()
+	db.CreateFollowTableIfDoesNotExist()
 
 	err := godotenv.Load()
 	if err != nil {
