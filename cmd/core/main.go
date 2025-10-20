@@ -6,9 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/rujool11/chirp-core-service/internal/db"
 )
 
 func main() {
+	// initialize DB connection
+	db.InitDB()
+	defer db.DB.Close()
 
 	err := godotenv.Load()
 	if err != nil {
