@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -148,5 +149,33 @@ func UnlikePost(c *gin.Context) {
 }
 
 func DeleteOwnPost(c *gin.Context) {
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
 
+	postIDStr := c.Param("id")
+	// .Get returns any, so we can directly use .int() to convert
+	// .Param returns string, so we have to use strconv
+	userID := userIDVal.(int)
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid post id"})
+		return
+	}
+
+	query := `DELETE FROM posts WHERE id=$1 AND user_id=$2`
+	result, err := db.DB.Exec(c, query, postID, userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to delete post"})
+		return
+	}
+
+	if result.RowsAffected() == 0 {
+		c.JSON(404, gin.H{"error": "Post not found or not your post"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Post deleted successfully"})
 }
