@@ -9,7 +9,37 @@ import (
 )
 
 func FetchAllPosts(c *gin.Context) {
+	query := `SELECT id, user_id, content, likes_count, comments_count, created_at
+			FROM posts 
+			ORDER BY created_at DESC`
 
+	rows, err := db.DB.Query(c, query)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch all posts"})
+		return
+	}
+
+	defer rows.Close()
+
+	var posts []models.Post
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(
+			&post.ID,
+			&post.UserID,
+			&post.Content,
+			&post.LikesCount,
+			&post.CommentsCount,
+			&post.CreatedAt,
+		)
+		if err != nil {
+			continue // skip problematic rows
+		}
+
+		posts = append(posts, post)
+	}
+
+	c.JSON(200, gin.H{"posts": posts})
 }
 
 func CreatePost(c *gin.Context) {
