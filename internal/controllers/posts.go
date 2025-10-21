@@ -42,6 +42,43 @@ func FetchAllPosts(c *gin.Context) {
 	c.JSON(200, gin.H{"posts": posts})
 }
 
+func FetchPostByUser(c *gin.Context) {
+	user_id := c.Param("id")
+	query := `SELECT id, user_id, content, likes_count, comments_count, created_at
+			FROM posts
+			WHERE user_id=$1 
+			ORDER BY created_at DESC`
+
+	rows, err := db.DB.Query(c, query, user_id)
+	if err != nil {
+		c.JSON(500, "Failed to fetch all posts")
+		return
+	}
+
+	defer rows.Close()
+	var posts []models.Post
+
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(
+			&post.ID,
+			&post.UserID,
+			&post.Content,
+			&post.LikesCount,
+			&post.CommentsCount,
+			&post.CreatedAt,
+		)
+		if err != nil {
+			continue
+		}
+
+		posts = append(posts, post)
+	}
+
+	c.JSON(200, gin.H{"posts": posts})
+
+}
+
 func CreatePost(c *gin.Context) {
 	userIDVal, exists := c.Get("user_id")
 	if !exists {

@@ -32,6 +32,7 @@ func main() {
 	{
 		post.GET("/", controllers.FetchAllPosts)
 		post.POST("/", middleware.AuthMiddleware(), controllers.CreatePost)
+		post.GET("/user/:id", controllers.FetchPostByUser)
 		post.GET("/:id", controllers.GetPostById)
 		post.DELETE("/:id", middleware.AuthMiddleware(), controllers.DeleteOwnPost)
 		post.POST("/:id/like", middleware.AuthMiddleware(), controllers.LikePost)
