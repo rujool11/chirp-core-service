@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rujool11/chirp-core-service/internal/db"
+	"github.com/rujool11/chirp-core-service/internal/models"
 )
 
 func FetchAllPosts(c *gin.Context) {
@@ -32,7 +33,7 @@ func CreatePost(c *gin.Context) {
 	// get NOW() created_at tie from database itself
 	createdAt := time.Now()
 	query := `INSERT INTO posts (user_id, content, created_at) VALUES ($1, $2, $3)
-			RETURNING id`
+			RETURNING id;`
 
 	var postId int
 	err := db.DB.QueryRow(c, query, userId, input.Content, createdAt).Scan(&postId)
@@ -49,7 +50,26 @@ func CreatePost(c *gin.Context) {
 }
 
 func GetPostById(c *gin.Context) {
+	id := c.Param("id")
+	var post models.Post
 
+	query := `SELECT id, user_id, content, likes_count, comments_count, created_at
+			FROM posts WHERE id=$1;`
+
+	err := db.DB.QueryRow(c, query, id).Scan(
+		&post.ID,
+		&post.UserID,
+		&post.Content,
+		&post.LikesCount,
+		&post.CommentsCount,
+		&post.CreatedAt,
+	)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Could not fetch post"})
+		return
+	}
+
+	c.JSON(200, gin.H{"post": post})
 }
 
 func LikePost(c *gin.Context) {
