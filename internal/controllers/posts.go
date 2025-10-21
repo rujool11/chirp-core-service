@@ -168,7 +168,7 @@ func LikePost(c *gin.Context) {
 		return
 	}
 
-	// if post already likes, skip increment in posts table
+	// if post already liked, skip increment in posts table
 	if result.RowsAffected() == 0 {
 		c.JSON(200, gin.H{"message": "Post already liked"})
 		return
@@ -186,6 +186,43 @@ func LikePost(c *gin.Context) {
 }
 
 func UnlikePost(c *gin.Context) {
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	postIDStr := c.Param("id")
+	userID := userIDVal.(int)
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid post id"})
+		return
+	}
+
+	// remove like from post_likes
+	query := `DELETE FROM post_likes WHERE user_id=$1 AND post_id=$2`
+	result, err := db.DB.Exec(c, query, userID, postID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Could not remove like from database"})
+		return
+	}
+
+	// if post not liked, skip decrement in posts table
+	if result.RowsAffected() == 0 {
+		c.JSON(200, gin.H{"message": "Post not liked"})
+		return
+	}
+
+	// decrement likes_count in posts table
+	query = `UPDATE posts SET likes_count = GREATEST(likes_count - 1,0) WHERE id=$1`
+	_, err = db.DB.Exec(c, query, postID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Could not decrement likes in posts table"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Post unliked"})
 
 }
 
