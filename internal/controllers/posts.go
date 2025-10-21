@@ -141,7 +141,48 @@ func GetPostById(c *gin.Context) {
 }
 
 func LikePost(c *gin.Context) {
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
 
+	postIDStr := c.Param("id")
+	userID := userIDVal.(int)
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid post id"})
+		return
+	}
+
+	// add like to post_likes
+	// on conflict do nothing will ignore on error, will not throw error
+	createdAt := time.Now()
+	query := `INSERT INTO post_likes (user_id, post_id, created_at)
+			VALUES ($1, $2, $3)
+			ON CONFLICT DO NOTHING;`
+
+	result, err := db.DB.Exec(c, query, userID, postID, createdAt)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Could not add like to database"})
+		return
+	}
+
+	// if post already likes, skip increment in posts table
+	if result.RowsAffected() == 0 {
+		c.JSON(200, gin.H{"message": "Post already liked"})
+		return
+	}
+
+	// Increment likes_count in posts table
+	query = `UPDATE posts SET likes_count = likes_count + 1 WHERE id=$1`
+	_, err = db.DB.Exec(c, query, postID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Could not increment likes in posts table"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Post liked"})
 }
 
 func UnlikePost(c *gin.Context) {
