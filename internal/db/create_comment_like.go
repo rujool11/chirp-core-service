@@ -11,7 +11,8 @@ func CreateCommentLikeTableIfDoesNotExist() {
 		user_id INT NOT NULL,
 		comment_id INT NOT NULL,
 		created_at TIMESTAMP DEFAULT NOW(),
-		PRIMARY KEY(user_id, comment_id)
+		PRIMARY KEY(user_id, comment_id),
+		FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE
 	);
 	`
 	_, err := DB.Exec(context.Background(), query)

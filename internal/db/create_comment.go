@@ -13,7 +13,8 @@ func CreateCommentTableIfDoesNotExist() {
 		user_id INT NOT NULL,
 		content TEXT NOT NULL,
 		likes_count INT DEFAULT 0,
-		created_at TIMESTAMP DEFAULT NOW()
+		created_at TIMESTAMP DEFAULT NOW(),
+		FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 	);
 	`
 	_, err := DB.Exec(context.Background(), query)
