@@ -11,7 +11,8 @@ func CreatePostLikeTableIfDoesNotExist() {
 		user_id INT NOT NULL,
 		post_id INT NOT NULL,
 		created_at TIMESTAMP DEFAULT NOW(),
-		PRIMARY KEY(user_id, post_id)
+		PRIMARY KEY(user_id, post_id),
+		FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 	);
 	`
 	_, err := DB.Exec(context.Background(), query)
