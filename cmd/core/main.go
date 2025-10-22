@@ -36,7 +36,16 @@ func main() {
 		post.GET("/:id", controllers.GetPostById)
 		post.DELETE("/:id", middleware.AuthMiddleware(), controllers.DeleteOwnPost)
 		post.POST("/:id/like", middleware.AuthMiddleware(), controllers.LikePost)
-		post.DELETE("/:id/like", middleware.AuthMiddleware(), controllers.UnlikePost)
+		post.DELETE("/:id/unlike", middleware.AuthMiddleware(), controllers.UnlikePost)
+	}
+
+	comment := r.Group("/comments")
+	{
+		comment.GET("/post/:post_id", controllers.FetchCommentsByPost)
+		comment.POST("/post/:post_id", middleware.AuthMiddleware(), controllers.CreateComment)
+		comment.DELETE("/:id", middleware.AuthMiddleware(), controllers.DeleteOwnComment)
+		comment.POST("/:id/like", middleware.AuthMiddleware(), controllers.LikeComment)
+		comment.DELETE("/:id/unlike", middleware.AuthMiddleware(), controllers.UnlikeComment)
 	}
 
 	r.GET("/", func(c *gin.Context) {
