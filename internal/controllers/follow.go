@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rujool11/chirp-core-service/internal/db"
+	"github.com/rujool11/chirp-core-service/internal/models"
 )
 
 func FollowUser(c *gin.Context) {
@@ -113,7 +114,7 @@ func GetFollowers(c *gin.Context) {
 		return
 	}
 
-	query := `SELECT u.id, u.username, u.bio, u.followers_count, u.following_count
+	query := `SELECT u.id, u.username, u.email, u.bio, u.likes_count, u.followers_count, u.following_count, u.tweets_count, u.created_at
 			  FROM follow f
 			  JOIN users u ON f.follower_id = u.id
 			  WHERE f.following_id = $1`
@@ -125,21 +126,23 @@ func GetFollowers(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	type Follower struct {
-		ID             int    `json:"id"`
-		Username       string `json:"username"`
-		Bio            string `json:"bio"`
-		FollowersCount int    `json:"followers_count"`
-		FollowingCount int    `json:"following_count"`
-	}
-
-	var followers []Follower
+	var followers []models.User
 	for rows.Next() {
-		var f Follower
-		if err := rows.Scan(&f.ID, &f.Username, &f.Bio, &f.FollowersCount, &f.FollowingCount); err != nil {
+		var user models.User
+		if err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.Bio,
+			&user.LikesCount,
+			&user.FollowersCount,
+			&user.FollowingCount,
+			&user.TweetsCount,
+			&user.CreatedAt,
+		); err != nil {
 			continue
 		}
-		followers = append(followers, f)
+		followers = append(followers, user)
 	}
 
 	c.JSON(200, gin.H{"followers": followers})
@@ -153,7 +156,7 @@ func GetFollowing(c *gin.Context) {
 		return
 	}
 
-	query := `SELECT u.id, u.username, u.bio, u.followers_count, u.following_count
+	query := `SELECT u.id, u.username, u.email, u.bio, u.likes_count, u.followers_count, u.following_count, u.tweets_count, u.created_at
 			  FROM follow f
 			  JOIN users u ON f.following_id = u.id
 			  WHERE f.follower_id = $1`
@@ -165,21 +168,23 @@ func GetFollowing(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	type Following struct {
-		ID             int    `json:"id"`
-		Username       string `json:"username"`
-		Bio            string `json:"bio"`
-		FollowersCount int    `json:"followers_count"`
-		FollowingCount int    `json:"following_count"`
-	}
-
-	var following []Following
+	var following []models.User
 	for rows.Next() {
-		var f Following
-		if err := rows.Scan(&f.ID, &f.Username, &f.Bio, &f.FollowersCount, &f.FollowingCount); err != nil {
+		var user models.User
+		if err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Email,
+			&user.Bio,
+			&user.LikesCount,
+			&user.FollowersCount,
+			&user.FollowingCount,
+			&user.TweetsCount,
+			&user.CreatedAt,
+		); err != nil {
 			continue
 		}
-		following = append(following, f)
+		following = append(following, user)
 	}
 
 	c.JSON(200, gin.H{"following": following})
