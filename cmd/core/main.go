@@ -48,6 +48,14 @@ func main() {
 		comment.DELETE("/:id/unlike", middleware.AuthMiddleware(), controllers.UnlikeComment)
 	}
 
+	follow := r.Group("/follow")
+	{
+		follow.POST("/:id", middleware.AuthMiddleware(), controllers.FollowUser)
+		follow.DELETE("/:id", middleware.AuthMiddleware(), controllers.UnfollowUser)
+		follow.GET("/followers/:id", controllers.GetFollowers)
+		follow.GET("/following/:id", controllers.GetFollowing)
+	}
+
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Hello from chirp-core-service",
