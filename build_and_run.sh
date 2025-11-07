@@ -20,6 +20,7 @@ docker rm -f ${APP_NAME} 2>/dev/null || true
 docker run -d \
   --name ${APP_NAME} \
   -p ${PORT}:${PORT} \
+  --network chirp-network \
   ${APP_NAME}:${IMAGE_TAG}
 
 echo "${APP_NAME} is running on http://localhost:${PORT}"
